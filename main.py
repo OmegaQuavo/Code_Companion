@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -5,7 +6,13 @@ from fastapi.responses import StreamingResponse
 from openai import OpenAI
 
 app = FastAPI()
-client = OpenAI()
+
+# ✅ Load the OpenAI key explicitly (so it works on Render)
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("❌ OPENAI_API_KEY not found — please set it in Render's environment settings.")
+
+client = OpenAI(api_key=api_key)
 
 # Allow frontend requests (CORS)
 app.add_middleware(
@@ -14,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Regular chat (non-streaming)
 @app.post("/chat")
